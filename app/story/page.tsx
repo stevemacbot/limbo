@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { SceneVariant } from "@/lib/nodes";
 import SceneEngine from "@/components/SceneEngine";
 
@@ -54,40 +54,43 @@ export default function StoryPage() {
     hoverZones: number;
     score: number;
   }) {
-    if (!scene || !sessionId || transitioning) return;
+    if (!scene || transitioning) return;
     setTransitioning(true);
     setPrevScene(scene);
     setCanAdvance(false);
 
-    try {
-      const res = await fetch("/api/next-node", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId,
-          ...metrics,
-        }),
-      });
-      const data = await res.json();
-      // Brief crossfade delay
+    const applyNext = (nodeId: string, variant: SceneVariant) => {
       setTimeout(() => {
-        setScene({ nodeId: data.node.id, variant: data.variant });
+        setScene({ nodeId, variant });
         setTransitioning(false);
         setPrevScene(null);
       }, 600);
-    } catch {
-      // On error, still advance using local logic
-      import("@/lib/nodes").then(({ getNode, pickVariant, pickNextNode }) => {
-        const currentNode = getNode(scene.nodeId);
-        const nextNode = pickNextNode(currentNode, []);
-        const nextVariant = pickVariant(nextNode);
-        setTimeout(() => {
-          setScene({ nodeId: nextNode.id, variant: nextVariant });
-          setTransitioning(false);
-          setPrevScene(null);
-        }, 600);
-      });
+    };
+
+    // Try API first (records engagement data), fall back to local if unavailable
+    if (sessionId) {
+      try {
+        const res = await fetch("/api/next-node", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, ...metrics }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          applyNext(data.node.id, data.variant);
+          return;
+        }
+      } catch {
+        // fall through to local
+      }
     }
+
+    // Local fallback — works even before session loads or if API is down
+    const { getNode, pickVariant, pickNextNode } = await import("@/lib/nodes");
+    const currentNode = getNode(scene.nodeId);
+    const nextNode = pickNextNode(currentNode, []);
+    const nextVariant = pickVariant(nextNode);
+    applyNext(nextNode.id, nextVariant);
   }
 
   // Entry screen

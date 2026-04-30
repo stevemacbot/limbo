@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, saveSession, recordNodeVisit } from "@/lib/session";
 import { getNode, pickVariant, pickNextNode } from "@/lib/nodes";
