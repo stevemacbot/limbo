@@ -78,12 +78,26 @@ const globalStyles = `
   .anim-drift  { animation: drift   28s ease-in-out infinite; }
   .anim-flicker { animation: flicker 8s ease-in-out infinite; }
   .anim-pulse  { animation: pulse-dim 6s ease-in-out infinite; }
+
+  /* ── Mobile ── */
+  .scene-text-2xl { font-size: clamp(1.5rem, 6vw, 2.4rem); }
+  .scene-text-xl  { font-size: clamp(1.2rem, 5vw, 1.8rem); }
+  .scene-text-lg  { font-size: clamp(1rem,  4vw, 1.4rem); }
+  .scene-text-md  { font-size: clamp(0.9rem, 3.5vw, 1.1rem); }
+  .scene-text-sm  { font-size: clamp(0.8rem, 3vw, 0.9rem); }
+
+  @media (max-width: 600px) {
+    .scene-padding { padding: 1.5rem !important; }
+    .scene-padding-bottom { padding: 0 1.5rem 3rem !important; }
+  }
 `;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="theme-color" content="#070708" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link

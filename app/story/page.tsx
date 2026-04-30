@@ -105,6 +105,9 @@ export default function StoryPage() {
           justifyContent: "center",
           cursor: "pointer",
           gap: "1.5rem",
+          touchAction: "none",
+          userSelect: "none",
+          WebkitTapHighlightColor: "transparent",
         }}
       >
         <div className="overlay-noise" />
@@ -113,7 +116,7 @@ export default function StoryPage() {
           style={{
             fontFamily: "var(--ff-display)",
             fontStyle: "italic",
-            fontSize: "2.8rem",
+            fontSize: "clamp(2rem, 8vw, 2.8rem)",
             fontWeight: 700,
             color: "rgba(232, 228, 220, 0.9)",
             letterSpacing: "-0.02em",

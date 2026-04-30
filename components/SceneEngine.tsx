@@ -70,16 +70,24 @@ export default function SceneEngine({ variant, nodeId, sessionId, onAdvance, can
     return () => clearInterval(timer);
   }, [textVisible, variant.text.appear, variant.text.content]);
 
-  // Mouse tracking
+  // Mouse + touch tracking
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      positionsRef.current.push({ x: e.clientX, y: e.clientY });
-      eventBatchRef.current.push({ t: Date.now(), x: e.clientX, y: e.clientY });
-      // Cap memory
+    const track = (x: number, y: number) => {
+      positionsRef.current.push({ x, y });
+      eventBatchRef.current.push({ t: Date.now(), x, y });
       if (positionsRef.current.length > 500) positionsRef.current = positionsRef.current.slice(-500);
     };
+    const onMove = (e: MouseEvent) => track(e.clientX, e.clientY);
+    const onTouch = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (t) track(t.clientX, t.clientY);
+    };
     window.addEventListener("mousemove", onMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onTouch, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onTouch);
+    };
   }, []);
 
   // Batch-flush events to API every 3s
@@ -164,6 +172,7 @@ export default function SceneEngine({ variant, nodeId, sessionId, onAdvance, can
         filter: visual.filter,
         cursor: canAdvance ? "pointer" : "default",
         overflow: "hidden",
+        touchAction: "none",
       }}
       className={[
         visual.animation === "slow-drift" ? "anim-drift" : "",
@@ -190,6 +199,8 @@ export default function SceneEngine({ variant, nodeId, sessionId, onAdvance, can
           alignItems: text.align === "left" ? "flex-start" : text.align === "right" ? "flex-end" : "center",
           justifyContent: text.position === "top" ? "flex-start" : text.position === "bottom" ? "flex-end" : "center",
           padding: text.position === "bottom" ? "0 3rem 4rem" : text.position === "top" ? "4rem 3rem 0" : "2rem",
+          WebkitTapHighlightColor: "transparent",
+          userSelect: "none",
           pointerEvents: "none",
         }}
       >
@@ -199,7 +210,6 @@ export default function SceneEngine({ variant, nodeId, sessionId, onAdvance, can
             transition: text.appear === "fade" ? "opacity 1.8s ease" : text.appear === "float-up" ? "opacity 1.4s ease, transform 1.4s ease" : "none",
             transform: text.appear === "float-up" ? (textVisible ? "translateY(0)" : "translateY(20px)") : "none",
             fontFamily: text.font === "serif" ? "var(--ff-display)" : text.font === "mono" ? "var(--ff-mono)" : "var(--ff-body)",
-            fontSize: { sm: "0.9rem", md: "1.1rem", lg: "1.4rem", xl: "1.8rem", "2xl": "2.4rem" }[text.size],
             fontStyle: text.font === "serif" ? "italic" : "normal",
             fontWeight: text.font === "mono" ? 400 : 600,
             color: "var(--text)",
@@ -209,6 +219,7 @@ export default function SceneEngine({ variant, nodeId, sessionId, onAdvance, can
             textAlign: text.align ?? "center",
             whiteSpace: "pre-line",
           }}
+          className={`scene-text-${text.size}`}
         >
           {displayText}
         </p>
