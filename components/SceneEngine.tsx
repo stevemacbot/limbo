@@ -39,11 +39,9 @@ export default function SceneEngine({ variant, nodeId, sessionId, onAdvance, can
     const t1 = setTimeout(() => setTextVisible(true), 800);
     const t2 = setTimeout(() => setSubtextVisible(true), variant.text.appear === "typewriter" ? 2000 : 2200);
 
-    // Show "continue" hint after min dwell
-    minDwellTimerRef.current = setTimeout(() => {
-      onCanAdvance();
-      setTimeout(() => setHint(true), 500);
-    }, variant.duration.min);
+    // Allow advancing immediately; show hint after a short delay
+    onCanAdvance();
+    minDwellTimerRef.current = setTimeout(() => setHint(true), 1800);
 
     // Auto-advance if max set
     let autoTimer: ReturnType<typeof setTimeout> | undefined;
