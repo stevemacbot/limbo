@@ -2,17 +2,19 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { SceneVariant } from "@/lib/nodes";
 import { computeMouseEntropy, computeEngagementScore, countHoverZones } from "@/lib/tracker";
+import SVGOverlay from "@/components/SVGOverlay";
 
 interface Props {
   variant: SceneVariant;
   nodeId: string;
   sessionId: string;
   onAdvance: (metrics: { dwellMs: number; mouseEntropy: number; hoverZones: number; score: number }) => void;
-  canAdvance: boolean; // true once min dwell elapsed
+  canAdvance: boolean;
   onCanAdvance: () => void;
+  nodeFeatures?: { intensity: number; pacing: number };
 }
 
-export default function SceneEngine({ variant, nodeId, sessionId, onAdvance, canAdvance, onCanAdvance }: Props) {
+export default function SceneEngine({ variant, nodeId, sessionId, onAdvance, canAdvance, onCanAdvance, nodeFeatures }: Props) {
   const startRef = useRef(Date.now());
   const positionsRef = useRef<Array<{ x: number; y: number }>>([]);
   const eventBatchRef = useRef<Array<{ t: number; x: number; y: number }>>([]);
@@ -187,6 +189,24 @@ export default function SceneEngine({ variant, nodeId, sessionId, onAdvance, can
       {/* Vignette overlay */}
       {(visual.overlay === "vignette" || visual.overlay === "both") && (
         <div className="overlay-vignette" />
+      )}
+
+      {/* SVG vector overlay — positioned to match text */}
+      {textVisible && nodeFeatures && (
+        <div style={{
+          position: "absolute", inset: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          pointerEvents: "none",
+        }}>
+          <SVGOverlay
+            text={text.content}
+            font={text.font}
+            size={text.size}
+            intensity={nodeFeatures.intensity}
+            pacing={nodeFeatures.pacing}
+            align={text.align ?? "center"}
+          />
+        </div>
       )}
 
       {/* Text layer */}

@@ -6,6 +6,7 @@ import SceneEngine from "@/components/SceneEngine";
 interface SceneState {
   nodeId: string;
   variant: SceneVariant;
+  features?: { intensity: number; pacing: number };
 }
 
 export default function StoryPage() {
@@ -33,14 +34,14 @@ export default function StoryPage() {
         import("@/lib/nodes").then(({ getNode }) => {
           const node = getNode(session.currentNodeId);
           const variant = node.variants.find((v) => v.id === session.currentVariantId) ?? node.variants[0];
-          setScene({ nodeId: node.id, variant });
+          setScene({ nodeId: node.id, variant, features: node.features });
         });
       })
       .catch(() => {
         // Fallback: start from node 0
         import("@/lib/nodes").then(({ NODES, pickVariant }) => {
           const node = NODES[0];
-          setScene({ nodeId: node.id, variant: pickVariant(node) });
+          setScene({ nodeId: node.id, variant: pickVariant(node), features: node.features });
         });
       });
   }, []);
@@ -92,7 +93,9 @@ export default function StoryPage() {
         nextVariant = pickVariant(next);
       }
 
-      setScene({ nodeId: nextNodeId!, variant: nextVariant! });
+      const { getNode: gn } = await import("@/lib/nodes");
+      const nextFeatures = gn(nextNodeId!).features;
+      setScene({ nodeId: nextNodeId!, variant: nextVariant!, features: nextFeatures });
       setFading(false);
     } catch (err) {
       console.error("advance error", err);
@@ -158,6 +161,7 @@ export default function StoryPage() {
         onAdvance={handleAdvance}
         canAdvance={canAdvance && !fading}
         onCanAdvance={() => setCanAdvance(true)}
+        nodeFeatures={scene.features}
       />
     </div>
   );

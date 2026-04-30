@@ -79,6 +79,28 @@ const globalStyles = `
   .anim-flicker { animation: flicker 8s ease-in-out infinite; }
   .anim-pulse  { animation: pulse-dim 6s ease-in-out infinite; }
 
+  /* ── SVG overlay animations ── */
+  @keyframes trace-draw {
+    0%   { stroke-dashoffset: var(--perimeter, 9999); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 0.4; }
+  }
+  @keyframes trace-rotate {
+    from { stroke-dashoffset: 0; }
+    to   { stroke-dashoffset: -60; }
+  }
+  @keyframes drift-up {
+    0%   { transform: translateY(0px);   opacity: var(--op, 0.12); }
+    50%  { opacity: calc(var(--op, 0.12) * 1.5); }
+    100% { transform: translateY(-45px); opacity: 0; }
+  }
+  @keyframes fragment-flicker {
+    0%, 100% { opacity: var(--op, 0.1);  }
+    30%       { opacity: calc(var(--op, 0.1) * 2.5); }
+    60%       { opacity: calc(var(--op, 0.1) * 0.5); }
+  }
+
   /* ── Mobile ── */
   .scene-text-2xl { font-size: clamp(1.5rem, 6vw, 2.4rem); }
   .scene-text-xl  { font-size: clamp(1.2rem, 5vw, 1.8rem); }
